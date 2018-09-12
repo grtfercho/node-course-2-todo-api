@@ -4,7 +4,7 @@ console.log('=========================================================');
 console.log('=========================================================');
 // console.log(JSON.stringify(dbClient,undefined,2));
 // console.log(dbClient.connect);
-console.log('========================================================');
+console.log('=========================================================');
 dbClient.connect('mongodb://localhost:27017/SomeOtherDB'
         ,{useNewUrlParser: true}
         ,(err, client) => {
