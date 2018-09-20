@@ -21,6 +21,11 @@ var app = express();
 app.use( bodyParser.json() );
 app.use( '/todos',todos ); // CRUD routes defined for "Todos"
 
+app.get('/',(req,res) => {
+    res.send('All seems OK');
+ });
+
+
 app.listen( port, () => {
     console.log( `Server running on port ${port}` );
 } );
