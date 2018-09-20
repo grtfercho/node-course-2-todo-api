@@ -69,7 +69,8 @@ app.get('/todos/:id',(req, res) => {
                 if(!todo){
                     return res.status(404).send('ID did not match any records');
                 }
-
+                console.log('===== requested ======');
+                console.log(todo);
              res.status(200).send({todo});
             },(err) => {
                 return res.status(400).send('Invalid ID');

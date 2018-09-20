@@ -1,14 +1,15 @@
 const expect = require( 'expect' );
 const request = require( 'supertest' );
+const {ObjectID} = require('mongodb');
 
 const {app} = require( './../server' );
 const {Todo} = require( './../models/todo' );
 
 const seedTodos = [
-        { text: "Ipsum Lorem for Test 100" },
-        { text: "Ipsum Lorem for Test 200" },
-        { text: "Ipsum Lorem for Test 300" },
-        { text: "Ipsum Lorem for Test 400" }
+        { _id: new ObjectID(), text: "Ipsum Lorem for Test 100" },
+        { _id: new ObjectID(), text: "Ipsum Lorem for Test 200" },
+        { _id: new ObjectID(), text: "Ipsum Lorem for Test 300" },
+        { _id: new ObjectID(), text: "Ipsum Lorem for Test 400" }
     ];
 beforeEach( ( done ) => {
     Todo.deleteMany( {} )
@@ -84,9 +85,78 @@ describe('GET /todos',() => {
                 if(err) {
                     return done(err);
                 }
-                expect(res.body.length).toBe(seedTodos.length);
+                expect(res.body.todos.length).toBe(seedTodos.length);
                 done();
             });
 
     });
+}); //Describe GET /todos
+
+describe('GET /todos/:id individual Ids.',() => {
+    it('Should get one Todo',(done) => {
+        var idx = Math.floor(Math.random() * (seedTodos.length) )
+        console.log('Retrieving document # : ', idx);
+        request(app)
+            .get(`/todos/${seedTodos[idx]._id}`)
+            .expect(200)
+            .end((err, res) => {
+
+                if(err) {
+                    return done(err);
+                }
+                expect(res.body.todo.text).toBe(seedTodos[idx].text);
+                done();
+            });
+
+    });
+
+    it('Should return a 404 if todo not found with valid ID',(doneFunctionHere) => {
+
+        var IDtest =new ObjectID();
+        console.log(JSON.stringify(IDtest,undefined,2));
+        console.log('Id to Test: ',IDtest);
+        console.log('Hex representation : ',IDtest.toHexString());
+
+            request(app)
+                .get(`/todos/${IDtest}`)
+                .expect(404)
+                .expect((res) => {
+                    expect(res.text).toBe('ID did not match any records')
+                 		})
+                .end((err,res) => {
+                    if (err){
+                        return doneFunctionHere(err);
+                    }
+                    console.log('===== Result from test request with valid ID not on DB ===');
+                    console.log(res.text);
+                    console.log('-------------------------------------');
+                    doneFunctionHere();
+                 })
+
+     		}
+    );
+
+    it('Should return a 404 if ID is invalid',(doneFunctionHere) => {
+
+            request(app)
+                .get(`/todos/123`)
+                .expect(404)
+                .expect((res) => {
+                    expect(res.text).toBe('Not a valid ID')
+                 		})
+                .end((err,res) => {
+                    if (err){
+                        return doneFunctionHere(err);
+                    }
+                    console.log('===== Result from test request with invalid ID ===');
+                    console.log(res.text);
+                    console.log('-------------------------------------');
+                    doneFunctionHere();
+                 })
+
+     		}
+    );
+
+
+
 }); //Describe GET /todos
