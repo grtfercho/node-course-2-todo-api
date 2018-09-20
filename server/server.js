@@ -17,28 +17,51 @@ const port = process.env.PORT || 3000;
 var app = express();
 
 app.use( bodyParser.json() );
+
 app.post( '/todos', ( req, res ) => {
     console.log( req.body );
     var todo = new Todo( {
         text: req.body.text
     } );
 
-    todo.save().then( ( dbTodo ) => {
-            res.send( `Saved new Todo: ${JSON.stringify(dbTodo,undefined,2)}` );
+    todo.save()
+        .then( ( dbTodo ) => {
+            res.send( dbTodo );
 
-            console.log( 'Saved the new Todo ', dbTodo );
+        //    console.log( 'Saved the new Todo ', dbTodo );
 
-        }, ( err ) => {
-            res
-                .status( 400 )
-                .send( `Error, couldn\'t save the to do, oh the horror. : ${JSON.stringify(err,undefined,2)}` )
-        } )
+            },
+            ( err ) => {
+                // console.log('*************************');
+                // console.log(err);
+                // console.log('*************************');
+                res
+                    .status( 400 )
+                    .send( `Error, couldn\'t save the to do, oh the horror. : ${JSON.stringify(err,undefined,2)}` )
+            })
         .catch( ( errorOnTheCatch ) => {
+            console.log(errorOnTheCatch);
             res.send( `Error, couldn\'t save the to do : ${errorOnTheCatch}` )
         } );
 
 } );
 
+
+app.get('/todos',(req, res) => {
+        Todo.find()
+            .then((todos) => {
+                return res.send(todos);
+            },(err) => {
+                console.log(err);
+                return res.status(400).send(err);
+             		}
+            )
+ 		});
+
+
 app.listen( port, () => {
     console.log( `Server running on port ${port}` );
 } );
+
+
+module.exports.app = app;
