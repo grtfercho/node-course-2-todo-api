@@ -51,7 +51,7 @@ beforeEach( ( done ) => {
          		});
 } );
 
-describe( '********* POST /todos [ Create a NEW todo ] *********', () => {
+describe( '******************* POST /todos [ Create a NEW todo ] *******************', () => {
     it( '-- Should save a new todo', ( done ) => {
         var text = `ipsum lorem new: -!${uuidv4()}!-`;
         //Check if the result from the POST returns the new record.
@@ -124,7 +124,7 @@ describe( '********* POST /todos [ Create a NEW todo ] *********', () => {
 } );
 
 
-describe('*********  GET /todos *********',() => {
+describe('*******************  GET /todos *******************',() => {
     it('-- Should get all todos',(done) => {
         request(app)
             .get('/todos')
@@ -144,7 +144,7 @@ describe('*********  GET /todos *********',() => {
     });
 }); //Describe GET /todos
 
-describe('**************** GET /todos/:id individual Ids.****************',() => {
+describe('******************* GET /todos/:id individual Ids. *******************',() => {
     it('-- Should get one Todo',(done) => {
         var idx = Math.floor(Math.random() * (seedTodos.length) )
         console.log('Retrieving document # : ', idx);
@@ -213,39 +213,79 @@ describe('**************** GET /todos/:id individual Ids.****************',() =>
 
 }); //Describe GET /todos
 
-describe('******** DELETE /todos:id **********',() => {
+describe('*******************  DELETE /todos:id ******************* ',() => {
 
-        it('-- Should delete the todo identified by ID',(doneFunctionName) => {
+    it('-- Should delete the todo identified by ID',(doneFunctionName) => {
 
-            let idxToDelete = Math.floor(Math.random() * (seedTodos.length) );
+        let idxToDelete = Math.floor(Math.random() * (seedTodos.length) );
 
-            let id = seedTodos[idxToDelete]._id;
+        let id = seedTodos[idxToDelete]._id;
 
-            request(app)
-                .delete(`/todos/${id}`)
-                .expect(200)
-                .expect((res) => {
-                    expect(res.body.todo._id).toBe(id);
-                 	})
-                .end((err,done) => {
-                    Todo.findById(id)
-                        .then((todo) => {
-                            expect(todo).toBeNull();
-                            doneFunctionName();
-                        },
-                        (err) => {
-                            console.log('       -- !! Error on the rejection ');
-                            console.log('       -- !!!!!!!!!!!!!!!!!!!!!!!!!');
-                            console.log(err);
-                            doneFunctionName(err);
-                         		})
-                        .catch((err) => {
-                            console.log('       -- !! Error on the catch ');
-                            console.log('       -- !!!!!!!!!!!!!!!!!!!!!!!!!');
-                            console.log(err);
-                            doneFunctionName(err);
-                         		})
-                 		});
+        request(app)
+            .delete(`/todos/${id}`)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo._id).toBe(id);
+             	})
+            .end((err,done) => {
+                Todo.findById(id)
+                    .then((todo) => {
+                        expect(todo).toBeNull();
+                        doneFunctionName();
+                    },
+                    (err) => {
+                        console.log('       -- !! Error on the rejection ');
+                        console.log('       -- !!!!!!!!!!!!!!!!!!!!!!!!!');
+                        console.log(err);
+                        doneFunctionName(err);
+                     		})
+                    .catch((err) => {
+                        console.log('       -- !! Error on the catch ');
+                        console.log('       -- !!!!!!!!!!!!!!!!!!!!!!!!!');
+                        console.log(err);
+                        doneFunctionName(err);
+                     		})
+             		});
 
-        });
+    });
+
+    it('-- Should retunr a 404 when trying to delete a non-existent ID',(done) => {
+
+        request(app)
+            .delete(`/todos/${new ObjectID()}`)
+            .expect(404)
+            .expect((res) => {
+                expect(res.text).toBe('ID did not match any records')
+                    })
+            .end((err,res) => {
+                if (err){
+                    return done(err);
+                }
+                console.log('===== Result from test request with non-existent ID ===');
+                console.log(res.text);
+                console.log('-------------------------------------');
+                done();
+             })
+
+    });
+
+    it('-- Should retunr a 404 when passing an Invalid ID',(done) => {
+
+        request(app)
+            .delete(`/todos/4234`)
+            .expect(404)
+            .expect((res) => {
+                expect(res.text).toBe('Not a valid ID')
+                    })
+            .end((err,res) => {
+                if (err){
+                    return done(err);
+                }
+                console.log('===== Result from test request with invalid ID ===');
+                console.log(res.text);
+                console.log('-------------------------------------');
+                done();
+             })
+
+    });
 });
