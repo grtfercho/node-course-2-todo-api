@@ -15,7 +15,7 @@ router.post( '/', ( req, res ) => {
 
     todo.save()
         .then( ( dbTodo ) => {
-            res.send( dbTodo );
+            res.send( {todo:dbTodo} );
 
         //    console.log( 'Saved the new Todo ', dbTodo );
 
@@ -53,6 +53,25 @@ router.get('/:id',(req, res) => {
     }
 
         Todo.findById(req.params.id)
+            .then((todo) => {
+                if(!todo){
+                    return res.status(404).send('ID did not match any records');
+                }
+                console.log('===== requested ======');
+                console.log(todo);
+             res.status(200).send({todo});
+            },(err) => {
+                return res.status(400).send('Invalid ID');
+             		}
+            )
+ 		});
+
+router.delete('/:id',(req, res) => {
+    if(!ObjectId.isValid(req.params.id)){
+        return res.status(404).send('Not a valid ID');
+    }
+
+        Todo.findByIdAndDelete(req.params.id)
             .then((todo) => {
                 if(!todo){
                     return res.status(404).send('ID did not match any records');
