@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise; //This way mongoose uses the regular Promise behaviour
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/TodoApp', {
+mongoose.connect(process.env.MONGODB_URI , {
     useNewUrlParser: true
 });
 // process.env.MONGODB_URI looks similar to the following.

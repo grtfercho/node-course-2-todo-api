@@ -5,15 +5,22 @@ const {ObjectID} = require('mongodb');
 const {app} = require( './../server' );
 const {Todo} = require( './../models/todo' );
 
+
+//A random UUID (not fully reliable for prod, but enough for small testing cases)
+// source: https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
 }
+
+
 var testToken = '';
 var seedTodos =[];
 
+
+// The After below cleans up the DB from all the testing records created using the RegExp.
 after((done) => {
     Todo.deleteMany( {
             text:{
@@ -22,12 +29,14 @@ after((done) => {
         } )
         .then( () => done() )
         .catch((error) => {
-
             console.log(error);
             done();
         });
 
 });
+
+//We'll create a test token for every test case and use the seedTodos records to populate the DB for that particular run.
+// We'll also, for good measure, delete anything that matches our pattern -!.*!-
 beforeEach( ( done ) => {
     testToken = uuidv4();
     seedTodos = [
@@ -134,6 +143,8 @@ describe('*******************  GET /todos *******************',() => {
                     return done(err);
                 }
                 console.log("  --- Total Records on the Response : ",res.body.todos.length);
+
+                //This is a new method (countDocuments), not described in the course, but that I found on the mongoDB docs.
                 Todo.countDocuments((err,totalCount) => {
                     console.log("  --- Total Records on the DB : ", totalCount);
                     expect(res.body.todos.length).toBe(totalCount);
@@ -142,7 +153,7 @@ describe('*******************  GET /todos *******************',() => {
             });
 
     });
-}); //Describe GET /todos
+});
 
 describe('******************* GET /todos/:id individual Ids. *******************',() => {
     it('-- Should get one Todo',(done) => {
