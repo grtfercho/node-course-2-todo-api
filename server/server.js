@@ -15,6 +15,7 @@ const { Todo } = require( './models/todo.js' );
 
 //===== Application Routes
 const todos = require( './routes/todos.js' );
+const users = require( './routes/users.js' );
 
 //=============================================
 
@@ -22,6 +23,7 @@ var app = express();
 
 app.use( bodyParser.json() );
 app.use( '/todos', todos ); //=====  CRUD routes defined for "Todos"
+app.use( '/users', users ); //=====  CRUD routes defined for "Users"
 
 app.get( '/', ( req, res ) => {
 res.send( 'All seems OK' );

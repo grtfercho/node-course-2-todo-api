@@ -1,9 +1,9 @@
 /*
-All these routes work for "/todos/"
+All these routes work for "/users/"
 */
 const {
-    Todo
-} = require( './../models/todo.js' );
+    User
+} = require( './../models/user.js' );
 const {
     ObjectId
 } = require( 'mongodb' );
@@ -14,40 +14,34 @@ const router = express.Router();
 
 router.post( '/', ( req, res ) => {
     console.log( req.body );
-    var todo = new Todo( {
-        text: req.body.text
-    } );
 
-    todo.save()
-        .then( ( dbTodo ) => {
-                res.send( {
-                    todo: dbTodo
-                } );
+    let body = _.pick( req.body, [ 'email', 'password' ] ); // This can be considered a Marshaller. we only pick what we need from the payload
 
-                //    console.log( 'Saved the new Todo ', dbTodo );
+    var user = new User( body );
 
-            },
-            ( err ) => {
-                // console.log('*************************');
-                // console.log(err);
-                // console.log('*************************');
-                res
-                    .status( 400 )
-                    .send( `Error, couldn\'t save the to do, oh the horror. : ${JSON.stringify(err,undefined,2)}` )
-            } )
+    user.save()
+        .then( ( dbUser ) => {
+            console.log( '============ Saved the new User ============\n', dbUser );
+            return dbUser.generateAuthToken(); //with all the values present then generate the webToken
+        })
+        .then( (token) => {
+            // console.log( '============ WebToken ============\n', token );
+         	res.header('x-auth-token',token).send(user.toJSONPublic());
+        })
         .catch( ( errorOnTheCatch ) => {
             console.log( errorOnTheCatch );
-            res.send( `Error, couldn\'t save the to do : ${errorOnTheCatch}` )
+            res.send( `Error, couldn\'t save the to do : ${errorOnTheCatch.message}` );
+            console.trace();
         } );
 
 } );
 
 
 router.get( '/', ( req, res ) => {
-    Todo.find()
-        .then( ( todos ) => {
+    User.find()
+        .then( ( users ) => {
             return res.send( {
-                todos
+                users
             } );
         }, ( err ) => {
             console.log( err );
@@ -60,15 +54,15 @@ router.get( '/:id', ( req, res ) => {
         return res.status( 404 ).send( 'Not a valid ID' );
     }
 
-    Todo.findById( req.params.id )
-        .then( ( todo ) => {
-            if ( !todo ) {
+    User.findById( req.params.id )
+        .then( ( user ) => {
+            if ( !user ) {
                 return res.status( 404 ).send( 'ID did not match any records' );
             }
             console.log( '===== requested ======' );
-            console.log( todo );
+            console.log( user );
             res.status( 200 ).send( {
-                todo
+                user
             } );
         }, ( err ) => {
             return res.status( 400 ).send( 'Invalid ID' );
@@ -80,15 +74,15 @@ router.delete( '/:id', ( req, res ) => {
         return res.status( 404 ).send( 'Not a valid ID' );
     }
 
-    Todo.findByIdAndDelete( req.params.id )
-        .then( ( todo ) => {
-            if ( !todo ) {
+    User.findByIdAndDelete( req.params.id )
+        .then( ( user ) => {
+            if ( !user ) {
                 return res.status( 404 ).send( 'ID did not match any records' );
             }
             console.log( '===== requested ======' );
-            console.log( todo );
+            console.log( user );
             res.status( 200 ).send( {
-                todo
+                user
             } );
         }, ( err ) => {
             return res.status( 400 ).send( 'Invalid ID' );
@@ -99,29 +93,26 @@ router.patch( '/:id', ( req, res ) => {
     if ( !ObjectId.isValid( req.params.id ) ) {
         return res.status( 404 ).send( 'Not a valid ID' );
     }
-    let body = _.pick( req.body, [ 'text', 'completed' ] ); // This can be considered a Marshaller. we only pick what we need from the payload
+    let body = _.pick( req.body, [ 'email', 'password' ] ); // This can be considered a Marshaller. we only pick what we need from the payload
 
     console.log('******** BODY *******');
     console.log(body);
-    console.log(_.isBoolean( body.completed ));
 
 
-    if ( body.completed && _.isBoolean( body.completed ) && body.completed === true) {
+    if ( _.isBoolean( body.completed ) && body.completed ) {
         body.completedAt = new Date().getTime();
-        console.log('IM HERE');
     } else {
         body.completedAt= null;
         body.completed= false;
-        console.log('IM HERE TOO');
     }
 
 
-    Todo.findByIdAndUpdate( req.params.id, {$set:body},{new:true} )
-        .then((todo) => {
-            if(!todo){
+    User.findByIdAndUpdate( req.params.id, {$set:body},{new:true} )
+        .then((user) => {
+            if(!user){
                 return res.status(404).send('ID doesn\'t exist');
             }
-            res.send({todo})
+            res.send({user})
          		})
         .catch((error) => {
             res.status(400).send({error:error.message});
