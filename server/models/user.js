@@ -72,6 +72,26 @@ userSchema.methods.generateAuthToken =  function (){
 
 
 };
+userSchema.statics.findByToken=function (token){
+    var User =this;
+    var dataDecoded ;
+
+    try {
+     dataDecoded = jwt.verify(token,'saltandpeppa123');
+
+    } catch (e) {
+        // return new Promise((resolve,reject) => {
+        //         reject(e); //we did not find a record with the token provided
+        //
+        //  		});
+        return Promise.reject(e);
+    }
+    return User.findOne({
+        '_id':dataDecoded._id,
+        'tokens.access':'auth',
+        'tokens.token':token
+    });
+}
 
 
 var User = mongoose.model('User', userSchema);

@@ -9,6 +9,7 @@ const {
 } = require( 'mongodb' );
 const express = require( 'express' );
 const _ = require( 'lodash' );
+const auth = require('./../middleware/auth.js');
 const router = express.Router();
 
 
@@ -34,6 +35,11 @@ router.post( '/', ( req, res ) => {
             console.trace();
         } );
 
+} );
+
+router.get( '/me', auth, ( req, res ) => {
+    
+    res.send(_.pick(req.user,['_id','email']) );
 } );
 
 
